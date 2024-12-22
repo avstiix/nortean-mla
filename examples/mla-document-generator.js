@@ -38,7 +38,66 @@ class MLADocumentGenerator {
                 padding-left: 0.5in;
                 text-indent: -0.5in;
                 margin-bottom: 1em;
+            }`,
+        pageNumber: `
+            @page {
+                margin: 1in;
+            }
+            .page-number {
+                position: fixed;
+                top: 0.5in;
+                right: 1in;
+                font-family: var(--font-family);
+                font-size: var(--font-size);
+            }
+            .page-number::before {
+                content: counter(page);
+            }
+            @media print {
+                .page-break {
+                    page-break-before: always;
+                }
+            }`,
+        footnotes: `
+            .footnote {
+                font-size: 10pt;
+                margin-top: 2em;
+                border-top: 1px solid #000;
+                padding-top: 1em;
+            }
+            .footnote-ref {
+                vertical-align: super;
+                font-size: smaller;
             }`
+    };
+
+    #paperTypes = {
+        research: {
+            requiresWorksCited: true,
+            requiresAbstract: false,
+            defaultSections: ['introduction', 'body', 'conclusion']
+        },
+        essay: {
+            requiresWorksCited: false,
+            requiresAbstract: false,
+            defaultSections: ['introduction', 'body', 'conclusion']
+        },
+        thesis: {
+            requiresWorksCited: true,
+            requiresAbstract: true,
+            defaultSections: ['abstract', 'introduction', 'methodology', 'results', 'discussion', 'conclusion']
+        }
+    };
+
+    #citationFormats = {
+        book: (author, title, publisher, year) => 
+            `${author}. ${title}. ${publisher}, ${year}.`,
+        
+        journal: (author, title, journal, volume, issue, year, pages) =>
+            `${author}. "${title}." ${journal}, vol. ${volume}, no. ${issue}, ${year}, pp. ${pages}.`,
+        
+        website: (author, title, website, publisher, date, url) =>
+            `${author}. "${title}." ${website}, ${publisher}, ${date}, ${url}.`
     };
 
     constructor() {
@@ -107,6 +166,52 @@ class MLADocumentGenerator {
         return div.innerHTML;
     }
 
+    #generateInTextCitation(author, pageNumber = null) {
+        const citation = pageNumber 
+            ? `(${author}, ${pageNumber})`
+            : `(${author})`;
+        return `<span class="in-text-citation">${this.#escapeHTML(citation)}</span>`;
+    }
+
+    #generateFootnote(content, index) {
+        return {
+            reference: `<sup class="footnote-ref">${index}</sup>`,
+            note: `<div class="footnote" id="fn${index}">
+                ${index}. ${this.#escapeHTML(content)}
+            </div>`
+        };
+    }
+
+    formatCitation(type, ...args) {
+        if (!this.#citationFormats[type]) {
+            throw new Error(`Unsupported citation type: ${type}`);
+        }
+        return this.#citationFormats[type](...args);
+    }
+
+    #generateTableOfContents(sections) {
+        return `
+            <div class="table-of-contents">
+                <h2>Table of Contents</h2>
+                ${sections.map((section, index) => `
+                    <div class="toc-entry">
+                        <span class="toc-title">${this.#escapeHTML(section.title)}</span>
+                        <span class="toc-page">${section.page}</span>
+                    </div>
+                `).join('')}
+            </div>`;
+    }
+
+    #generateAppendix(appendixData) {
+        return `
+            <div class="appendix page-break">
+                <h2>Appendix ${appendixData.label}</h2>
+                <div class="appendix-content">
+                    ${this.#escapeHTML(appendixData.content)}
+                </div>
+            </div>`;
+    }
+
     generateHTML(documentData) {
         try {
             this.#validateDocumentData(documentData);
@@ -141,6 +246,7 @@ class MLADocumentGenerator {
                     </div>
                     
                     ${this.#generateCitations(mlaDoc.citations)}
+                    <div class="page-number"></div>
                 </body>
                 </html>`;
         } catch (error) {
@@ -163,6 +269,12 @@ class MLADocumentGenerator {
         } catch (error) {
             console.error('Error saving file:', error);
             throw new Error('Failed to save file: ' + error.message);
+        }
+    }
+
+    #validatePaperType(type) {
+        if (!this.#paperTypes[type]) {
+            throw new Error(`Invalid paper type. Supported types: ${Object.keys(this.#paperTypes).join(', ')}`);
         }
     }
 }
