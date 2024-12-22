@@ -68,6 +68,20 @@ class MLADocumentGenerator {
             .footnote-ref {
                 vertical-align: super;
                 font-size: smaller;
+            }`,
+        figures: `
+            .figure-container {
+                margin: 2em 0;
+                text-align: center;
+            }
+            .figure-image {
+                max-width: 100%;
+                height: auto;
+            }
+            .figure-caption {
+                font-size: 0.9em;
+                margin-top: 0.5em;
+                font-style: italic;
             }`
     };
 
@@ -208,6 +222,20 @@ class MLADocumentGenerator {
                 <h2>Appendix ${appendixData.label}</h2>
                 <div class="appendix-content">
                     ${this.#escapeHTML(appendixData.content)}
+                </div>
+            </div>`;
+    }
+
+    #generateFigure(imageData) {
+        return `
+            <div class="figure-container">
+                <img 
+                    class="figure-image" 
+                    src="${this.#escapeHTML(imageData.src)}" 
+                    alt="${this.#escapeHTML(imageData.alt)}"
+                />
+                <div class="figure-caption">
+                    Fig. ${imageData.number}: ${this.#escapeHTML(imageData.caption)}
                 </div>
             </div>`;
     }
