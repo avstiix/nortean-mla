@@ -1,24 +1,42 @@
 class BlockQuoteHandler {
-    formatBlockQuote(quoteData) {
-        const { text, author, citation } = quoteData;
-        const isLongQuote = text.split(' ').length > 40;
+    #cache = new Map();
+    #wordCountThreshold = 40;
 
-        return {
+    formatBlockQuote(quoteData) {
+        const cacheKey = JSON.stringify(quoteData);
+        
+        if (this.#cache.has(cacheKey)) {
+            return this.#cache.get(cacheKey);
+        }
+
+        const { text, author, citation } = quoteData;
+        const isLongQuote = this.#quickWordCount(text) > this.#wordCountThreshold;
+
+        const result = {
             html: this.#generateQuoteHTML(text, author, citation, isLongQuote),
             isLongQuote,
             citation: this.#formatCitation(author, citation)
         };
+
+        this.#cache.set(cacheKey, result);
+        return result;
+    }
+
+    #quickWordCount(text) {
+        return text.trim().split(/\s+/).length;
     }
 
     #generateQuoteHTML(text, author, citation, isLongQuote) {
-        const quoteClass = isLongQuote ? 'mla-block-quote-long' : 'mla-block-quote';
-        return `
-            <blockquote class="${quoteClass}">
-                <p>${text}</p>
-                ${author ? `<cite>${author}</cite>` : ''}
-                ${citation ? `<span class="citation">(${citation})</span>` : ''}
-            </blockquote>
-        `;
+        const parts = [
+            `<blockquote class="${isLongQuote ? 'mla-block-quote-long' : 'mla-block-quote'}">`,
+            `<p>${text}</p>`
+        ];
+
+        if (author) parts.push(`<cite>${author}</cite>`);
+        if (citation) parts.push(`<span class="citation">(${citation})</span>`);
+        parts.push('</blockquote>');
+
+        return parts.join('');
     }
 
     #formatCitation(author, citation) {

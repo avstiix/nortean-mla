@@ -26,6 +26,88 @@ This project provides tools for generating and formatting MLA-style documents pr
   - Figures and appendices.
 - Export documents as downloadable HTML files.
 
+## New Components
+
+### MLATableManager
+- Optimized table generation with caching system
+- Efficient HTML generation using array joins
+- Support for complex table structures
+- Memory-efficient table processing
+- Automatic table numbering and referencing
+
+### BlockQuoteHandler
+- Smart quote formatting with caching
+- Efficient word count algorithm
+- Support for both short and long quotes
+- Automatic citation integration
+- Memory-optimized HTML generation
+
+### PDFExportService
+- Worker-based PDF generation
+- Reusable worker instances
+- Compressed PDF output
+- Memory-efficient processing
+- Configurable export options
+
+### TemplateSystem
+- Fast template validation using Sets
+- Cached template results
+- Pre-initialized default templates
+- Memory-efficient template storage
+- Quick template lookup using Map
+
+### StyleCustomizationModule
+- Efficient style property validation
+- Cached CSS generation
+- Preset theme support
+- Memory-optimized style storage
+- Quick style application
+
+## Performance Optimizations
+- Implemented caching mechanisms for repeated operations
+- Used efficient data structures (Map, Set, WeakMap)
+- Optimized string operations with array joins
+- Added memory management and cleanup
+- Implemented worker reuse for heavy operations
+
+## Usage Examples
+
+### Using MLATableManager
+```javascript
+const tableManager = new MLATableManager();
+const tableData = {
+    headers: ['Name', 'Value'],
+    rows: [['Item 1', '100'], ['Item 2', '200']],
+    caption: 'Sample Table'
+};
+const table = tableManager.createTable(tableData);
+```
+
+### Using BlockQuoteHandler
+```javascript
+const quoteHandler = new BlockQuoteHandler();
+const quote = quoteHandler.formatBlockQuote({
+    text: 'This is a sample quote',
+    author: 'John Doe',
+    citation: 'Page 42'
+});
+```
+
+### Using PDFExportService
+```javascript
+const pdfService = new PDFExportService();
+await pdfService.exportToPDF(documentHTML, 'output.pdf');
+// Don't forget to clean up
+pdfService.destroy();
+```
+
+### Using TemplateSystem
+```javascript
+const templateSystem = new TemplateSystem();
+const template = templateSystem.getTemplate('research');
+templateSystem.validateTemplate('research', documentData);
+```
+
 ## Installation
 1. Clone this repository.
    ```bash
@@ -117,6 +199,7 @@ generator.formatCitation'book', 'John Doe', 'Modern Tech', 'Tech Press', '2024')
 ## Dependencies
 - JavaScript (ES6+)
 - HTML5/CSS3
+- html2pdf.js (for PDF export)
 - Optional: Node.js for local development.
 
 ## License
